@@ -14,11 +14,6 @@
 --   5. Modo manual con ambas salidas apagadas.
 --   6. Entrada a modo automático.
 --   7. Reset mientras está en modo automático.
---
--- Nota:
---   Los tiempos reales del modo automático, 5 s y 10 s,
---   no se simulan completos porque requieren millones de ciclos
---   de reloj a 50 MHz. Esos tiempos se validan en la FPGA física.
 -- ==========================================================
 
 library IEEE;
