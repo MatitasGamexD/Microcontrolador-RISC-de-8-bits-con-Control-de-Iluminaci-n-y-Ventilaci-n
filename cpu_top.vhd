@@ -24,9 +24,7 @@
 --   gpio_vent : salida hacia GPIO0_D1 para ventilador
 --
 -- Nota:
---   Las salidas internas y las salidas GPIO son duplicadas.
---   Es decir, la misma señal se observa en los LEDs de la FPGA
---   y también sale por GPIO0 para la maqueta física.
+--   Las salidas internas y las salidas GPIO son duplicadas osea que la misma señal se observa en los LEDs de la FPGA
 -- ==========================================================
 
 library IEEE;
