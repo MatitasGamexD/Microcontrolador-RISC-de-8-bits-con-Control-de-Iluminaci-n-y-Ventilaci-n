@@ -4,8 +4,7 @@
 --   Camino de datos del microcontrolador RISC de 8 bits.
 --
 -- Función:
---   Este módulo contiene los elementos internos que permiten
---   mover, almacenar y procesar datos dentro del microcontrolador.
+--   Este módulo contiene los elementos internos que permiten mover, almacenar y procesar datos dentro del microcontrolador.
 --
 -- Elementos principales:
 --   - Program Counter, PC
@@ -17,8 +16,7 @@
 --   - Buses hacia ROM y RAM/IO
 --
 -- Relación con otros módulos:
---   La unidad de control, control_unit.vhd, envía señales de
---   control a este datapath para indicar qué operación se debe
+--   La unidad de control, control_unit.vhd, envía señales de control a este datapath para indicar qué operación se debe
 --   realizar en cada estado de la FSM.
 --
 -- Arquitectura Harvard:
@@ -39,8 +37,7 @@ entity datapath is
         -- ======================================================
         -- Señales de control provenientes de la FSM
         -- ======================================================
-        -- Estas señales vienen desde control_unit.vhd y controlan
-        -- el comportamiento interno del datapath.
+        -- Estas señales vienen desde control_unit.vhd y controlan el comportamiento interno del datapath.
         -- ======================================================
 
         PC_Load          : in  STD_LOGIC; -- Carga el PC con el operando, usado en saltos
@@ -124,8 +121,7 @@ architecture Behavioral of datapath is
     -- ==========================================================
 
     -- Program Counter:
-    -- Guarda la dirección de la próxima posición de la ROM
-    -- que se va a leer.
+    -- Guarda la dirección de la próxima posición de la ROM que se va a leer.
     signal PC_reg : unsigned(7 downto 0) := (others => '0');
 
     -- Instruction Register:
@@ -133,8 +129,7 @@ architecture Behavioral of datapath is
     signal IR_reg : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
 
     -- Registro de operando:
-    -- Guarda el segundo byte de la instrucción.
-    -- Puede ser una dirección o un dato inmediato.
+    -- Guarda el segundo byte de la instrucción puede ser una dirección o un dato inmediato.
     signal Operand_reg : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
 
     -- ==========================================================
@@ -190,8 +185,7 @@ begin
 
             elsif PC_Inc = '1' then
 
-                -- Incrementa el PC para avanzar a la siguiente
-                -- posición de la ROM.
+                -- Incrementa el PC para avanzar a la siguiente posición de la ROM.
                 PC_reg <= PC_reg + 1;
 
             end if;
@@ -247,8 +241,7 @@ begin
     -- ==========================================================
     -- Instancia de la ALU
     -- ==========================================================
-    -- La ALU recibe dos datos del banco de registros y realiza
-    -- la operación indicada por ALU_Sel.
+    -- La ALU recibe dos datos del banco de registros y realiza la operación indicada por ALU_Sel.
     -- ==========================================================
 
     Inst_ALU: alu port map(
