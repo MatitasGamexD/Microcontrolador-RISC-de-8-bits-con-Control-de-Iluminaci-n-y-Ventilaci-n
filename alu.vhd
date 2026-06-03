@@ -15,10 +15,8 @@
 --   Zero    : Bandera que se activa cuando el resultado es cero.
 --
 -- Uso dentro del proyecto:
---   En este microcontrolador, la ALU se usa principalmente
---   para hacer la operación AND entre el valor leído de los
---   switches y una máscara, con el fin de saber si el sistema
---   está en modo manual o automático.
+--   En este microcontrolador, la ALU se usa principalmente para hacer la operación AND entre el valor leído de los
+--   switches y una máscara, con el fin de saber si el sistema está en modo manual o automático.
 -- ==========================================================
 
 library IEEE;
