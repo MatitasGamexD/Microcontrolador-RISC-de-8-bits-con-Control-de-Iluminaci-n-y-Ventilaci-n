@@ -71,8 +71,7 @@ begin
     -- ==========================================================
     -- Instancia del microcontrolador completo
     -- ==========================================================
-    -- UUT significa Unit Under Test, unidad bajo prueba.
-    -- Aquí se conecta el testbench con el módulo cpu_top.
+    -- UUT significa Unit Under Test, unidad bajo prueba aquí se conecta el testbench con el módulo cpu_top.
     -- ==========================================================
 
     UUT: cpu_top
@@ -112,8 +111,7 @@ begin
     -- ==========================================================
     -- Proceso de estímulos
     -- ==========================================================
-    -- Aquí se cambian las entradas del sistema para probar
-    -- diferentes condiciones de funcionamiento.
+    -- Aquí se cambian las entradas del sistema para probar diferentes condiciones de funcionamiento.
     -- ==========================================================
 
     stim_proc : process
@@ -122,8 +120,7 @@ begin
         -- ======================================================
         -- PRUEBA 1: RESET INICIAL
         -- ======================================================
-        -- Se activa reset para comprobar que todas las salidas
-        -- arranquen apagadas.
+        -- Se activa reset para comprobar que todas las salidas arranquen apagadas.
         -- ======================================================
 
         report "PRUEBA 1: Reset inicial";
@@ -151,8 +148,7 @@ begin
             report "ERROR: gpio_vent deberia estar apagado durante reset"
             severity error;
 
-        -- Se desactiva reset para que el microcontrolador comience
-        -- a ejecutar el programa desde la ROM.
+        -- Se desactiva reset para que el microcontrolador comience a ejecutar el programa desde la ROM.
         reset_tb <= '0';
         wait for 2 us;
 
@@ -293,8 +289,7 @@ begin
         --   iluminación = encendida
         --   ventilación = encendida
         --
-        -- Los cambios después de 5 s y 10 s se verifican
-        -- físicamente en la FPGA.
+        -- Los cambios después de 5 s y 10 s se verifican físicamente en la FPGA.
         -- ======================================================
 
         report "PRUEBA 6: Entrada a modo automatico";
@@ -324,9 +319,7 @@ begin
         -- ======================================================
         -- PRUEBA 7: RESET EN MODO AUTOMÁTICO
         -- ======================================================
-        -- Se activa reset mientras el sistema está en automático
-        -- para verificar que las salidas se apaguen y el sistema
-        -- vuelva a iniciar correctamente.
+        -- Se activa reset mientras el sistema está en automático para verificar que las salidas se apaguen y el sistema vuelva a iniciar correctamente.
         -- ======================================================
 
         report "PRUEBA 7: Reset durante modo automatico";
@@ -350,8 +343,7 @@ begin
             report "ERROR: Durante reset en automatico, gpio_vent deberia estar apagado"
             severity error;
 
-        -- Se desactiva el reset.
-        -- Como sw_modo_tb sigue en 1, el sistema vuelve a modo automático.
+        -- Se desactiva el reset como sw_modo_tb sigue en 1, el sistema vuelve a modo automático.
         reset_tb <= '0';
         wait for 5 us;
 
@@ -378,8 +370,7 @@ begin
         --   Iluminación: 5 s ON / 5 s OFF
         --   Ventilador:  5 s ON / 10 s OFF
         --
-        -- En simulación no se espera observar esos segundos
-        -- completos porque implican demasiados ciclos.
+        -- En simulación no se espera observar esos segundos completos porque implican demasiados ciclos.
         -- ======================================================
 
         report "SIMULACION FINALIZADA CORRECTAMENTE";
