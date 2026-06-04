@@ -1,22 +1,12 @@
+vhdl
 -- ==========================================================
 -- Archivo: alu.vhd
--- Descripción:
---   Unidad Aritmético-Lógica (ALU) de 8 bits.
---   Permite realizar operaciones básicas entre dos operandos:
---   suma, resta, AND y OR.
 --
--- Entradas:
---   A       : Primer operando de 8 bits.
---   B       : Segundo operando de 8 bits.
---   ALU_Sel : Selector de operación.
+-- En este archivo se implementa la ALU del microcontrolador.
+-- Trabaja con datos de 8 bits y permite hacer suma, resta, AND y OR.
 --
--- Salidas:
---   Result  : Resultado de la operación.
---   Zero    : Bandera que se activa cuando el resultado es cero.
---
--- Uso dentro del proyecto:
---   En este microcontrolador, la ALU se usa principalmente para hacer la operación AND entre el valor leído de los
---   switches y una máscara, con el fin de saber si el sistema está en modo manual o automático.
+-- En el proyecto se usa principalmente la operación AND para revisar
+el bit del switch de modo y saber si está en manual o automático.
 -- ==========================================================
 
 library IEEE;
@@ -25,61 +15,54 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity alu is
     Port (
-        A       : in  STD_LOGIC_VECTOR(7 downto 0); -- Operando A de 8 bits
-        B       : in  STD_LOGIC_VECTOR(7 downto 0); -- Operando B de 8 bits
-        ALU_Sel : in  STD_LOGIC_VECTOR(1 downto 0); -- Selector de operación
-        Result  : out STD_LOGIC_VECTOR(7 downto 0); -- Resultado de 8 bits
-        Zero    : out STD_LOGIC                      -- Bandera de resultado cero
+        A       : in  STD_LOGIC_VECTOR(7 downto 0); -- Primer dato que entra a la ALU
+        B       : in  STD_LOGIC_VECTOR(7 downto 0); -- Segundo dato que entra a la ALU
+        ALU_Sel : in  STD_LOGIC_VECTOR(1 downto 0); -- Indica qué operación se va a realizar
+        Result  : out STD_LOGIC_VECTOR(7 downto 0); -- Resultado final de la operación
+        Zero    : out STD_LOGIC                      -- Se activa cuando el resultado es cero
     );
 end alu;
 
 architecture Behavioral of alu is
 
-    -- Señal interna donde se almacena temporalmente
-    -- el resultado de la operación seleccionada.
+    -- Señal interna donde se guarda temporalmente el resultado de la operación.
     signal temp_result : STD_LOGIC_VECTOR(7 downto 0);
 
 begin
 
-    -- Proceso combinacional.
-    -- Se ejecuta cada vez que cambian A, B o ALU_Sel.
+    -- Proceso combinacional: cambia cuando cambian A, B o ALU_Sel.
     process(A, B, ALU_Sel)
     begin
         case ALU_Sel is
 
             when "00" =>
-                -- Operación de suma:
-                -- Convierte A y B a tipo unsigned para poder sumarlos.
+                -- Suma de A y B. Se convierten a unsigned para poder operar.
                 temp_result <= std_logic_vector(unsigned(A) + unsigned(B));
 
             when "01" =>
-                -- Operación de resta:
-                -- Convierte A y B a tipo unsigned para poder restarlos.
+                -- Resta de A menos B. También se usa unsigned para hacer la operación.
                 temp_result <= std_logic_vector(unsigned(A) - unsigned(B));
 
             when "10" =>
-                -- Operación lógica AND bit a bit.
-                -- En el proyecto se usa para revisar el bit de modo.
+                -- Operación AND bit a bit, usada para revisar el bit de modo.
                 temp_result <= A and B;
 
             when "11" =>
-                -- Operación lógica OR bit a bit.
+                -- Operación OR bit a bit.
                 temp_result <= A or B;
 
             when others =>
-                -- Caso de seguridad.
-                -- Si por alguna razón llega otro valor, el resultado se limpia.
+                -- Caso de seguridad: si llega un valor raro, se limpia el resultado.
                 temp_result <= (others => '0');
 
         end case;
     end process;
 
-    -- Se asigna el resultado interno a la salida de la ALU.
+    -- Se pasa el resultado interno hacia la salida principal de la ALU.
     Result <= temp_result;
 
-    -- Bandera Zero:
-    -- Se activa en '1' cuando el resultado es 00000000.
-    -- Se usa para instrucciones de salto condicional como JMP_ZERO.
+    -- La bandera Zero se activa cuando el resultado es 00000000.
+    -- Esta señal se usa en instrucciones como JMP_ZERO.
     Zero <= '1' when temp_result = "00000000" else '0';
 
 end Behavioral;
