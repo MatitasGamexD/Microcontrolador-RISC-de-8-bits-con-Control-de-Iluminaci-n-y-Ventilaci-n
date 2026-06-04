@@ -1,28 +1,16 @@
+```vhdl
 -- ==========================================================
 -- Archivo: datapath.vhd
--- Descripción:
---   Camino de datos del microcontrolador RISC de 8 bits.
 --
--- Función:
---   Este módulo contiene los elementos internos que permiten mover, almacenar y procesar datos dentro del microcontrolador.
+-- Este archivo contiene el camino de datos del microcontrolador.
+-- Aquí se conectan las partes que mueven, guardan y procesan datos,
+-- como el PC, el IR, el banco de registros y la ALU.
 --
--- Elementos principales:
---   - Program Counter, PC
---   - Instruction Register, IR
---   - Registro de operando
---   - Banco de registros
---   - ALU
---   - Multiplexor de escritura
---   - Buses hacia ROM y RAM/IO
+-- La unidad de control es la que manda las señales para decidir
+-- qué debe hacer el datapath en cada estado de la FSM.
 --
--- Relación con otros módulos:
---   La unidad de control, control_unit.vhd, envía señales de control a este datapath para indicar qué operación se debe
---   realizar en cada estado de la FSM.
---
--- Arquitectura Harvard:
---   Este datapath usa buses separados:
---      ROM_Addr / ROM_Data para instrucciones
---      RAM_Addr / RAM_Data para datos y puertos
+-- También se manejan buses separados para instrucciones y datos,
+-- siguiendo la idea de arquitectura Harvard.
 -- ==========================================================
 
 library IEEE;
@@ -32,51 +20,36 @@ use IEEE.NUMERIC_STD.ALL;
 entity datapath is
     Port (
         clk              : in  STD_LOGIC; -- Reloj principal del sistema
-        reset            : in  STD_LOGIC; -- Reset general
+        reset            : in  STD_LOGIC; -- Reinicia los registros internos
 
-        -- ======================================================
-        -- Señales de control provenientes de la FSM
-        -- ======================================================
-        -- Estas señales vienen desde control_unit.vhd y controlan el comportamiento interno del datapath.
-        -- ======================================================
-
+        -- Señales que vienen desde la unidad de control.
+        -- Con estas señales se maneja el comportamiento interno del datapath.
         PC_Load          : in  STD_LOGIC; -- Carga el PC con el operando, usado en saltos
-        PC_Inc           : in  STD_LOGIC; -- Incrementa el PC
-        IR_Load          : in  STD_LOGIC; -- Carga el opcode en el Instruction Register
-        Op_Load          : in  STD_LOGIC; -- Carga el operando de la instrucción
-        Reg_WE           : in  STD_LOGIC; -- Habilita escritura en el banco de registros
+        PC_Inc           : in  STD_LOGIC; -- Incrementa el PC para avanzar en la ROM
+        IR_Load          : in  STD_LOGIC; -- Guarda el opcode en el registro de instrucción
+        Op_Load          : in  STD_LOGIC; -- Guarda el operando de la instrucción
+        Reg_WE           : in  STD_LOGIC; -- Habilita la escritura en el banco de registros
 
-        Reg_Dest         : in  STD_LOGIC_VECTOR(1 downto 0); -- Registro destino
-        Reg_SrcA         : in  STD_LOGIC_VECTOR(1 downto 0); -- Registro fuente A
-        Reg_SrcB         : in  STD_LOGIC_VECTOR(1 downto 0); -- Registro fuente B
+        Reg_Dest         : in  STD_LOGIC_VECTOR(1 downto 0); -- Registro donde se escribe el dato
+        Reg_SrcA         : in  STD_LOGIC_VECTOR(1 downto 0); -- Primer registro que se va a leer
+        Reg_SrcB         : in  STD_LOGIC_VECTOR(1 downto 0); -- Segundo registro que se va a leer
 
-        ALU_Sel          : in  STD_LOGIC_VECTOR(1 downto 0); -- Operación de la ALU
+        ALU_Sel          : in  STD_LOGIC_VECTOR(1 downto 0); -- Selecciona la operación de la ALU
 
-        -- Selector del dato que se escribirá en el banco de registros:
-        -- "00" = resultado de ALU
-        -- "01" = dato leído desde RAM/IO
-        -- "10" = operando inmediato
+        -- Selecciona qué dato se escribe en el banco de registros:
+        -- "00" = resultado de la ALU, "01" = dato de RAM/IO, "10" = operando inmediato.
         Mux_RegWrite_Sel : in  STD_LOGIC_VECTOR(1 downto 0);
 
-        -- ======================================================
-        -- Señales de estado hacia la FSM
-        -- ======================================================
+        -- Señales que el datapath le entrega a la unidad de control.
+        Opcode           : out STD_LOGIC_VECTOR(7 downto 0); -- Opcode de la instrucción actual
+        Zero_Flag        : out STD_LOGIC;                    -- Bandera de cero generada por la ALU
 
-        Opcode           : out STD_LOGIC_VECTOR(7 downto 0); -- Opcode actual
-        Zero_Flag        : out STD_LOGIC;                    -- Bandera de cero de la ALU
+        -- Bus hacia la ROM, donde están guardadas las instrucciones.
+        ROM_Addr         : out STD_LOGIC_VECTOR(7 downto 0); -- Dirección que se envía a la ROM
+        ROM_Data         : in  STD_LOGIC_VECTOR(7 downto 0); -- Dato leído desde la ROM
 
-        -- ======================================================
-        -- Bus de memoria ROM, memoria de instrucciones
-        -- ======================================================
-
-        ROM_Addr         : out STD_LOGIC_VECTOR(7 downto 0); -- Dirección hacia ROM
-        ROM_Data         : in  STD_LOGIC_VECTOR(7 downto 0); -- Dato leído desde ROM
-
-        -- ======================================================
-        -- Bus de memoria RAM e I/O, memoria de datos y puertos
-        -- ======================================================
-
-        RAM_Addr         : out STD_LOGIC_VECTOR(7 downto 0); -- Dirección hacia RAM/IO
+        -- Bus hacia RAM/IO, donde están los datos y los puertos externos.
+        RAM_Addr         : out STD_LOGIC_VECTOR(7 downto 0); -- Dirección que se envía a RAM/IO
         RAM_Data_In      : in  STD_LOGIC_VECTOR(7 downto 0); -- Dato leído desde RAM/IO
         RAM_Data_Out     : out STD_LOGIC_VECTOR(7 downto 0)  -- Dato que se escribe en RAM/IO
     );
@@ -84,10 +57,7 @@ end datapath;
 
 architecture Behavioral of datapath is
 
-    -- ==========================================================
-    -- Declaración del componente ALU
-    -- ==========================================================
-
+    -- Componente ALU usado dentro del datapath.
     component alu
         Port (
             A       : in  STD_LOGIC_VECTOR(7 downto 0);
@@ -98,10 +68,7 @@ architecture Behavioral of datapath is
         );
     end component;
 
-    -- ==========================================================
-    -- Declaración del componente Banco de Registros
-    -- ==========================================================
-
+    -- Componente del banco de registros.
     component register_bank
         Port (
             clk         : in  STD_LOGIC;
@@ -116,60 +83,35 @@ architecture Behavioral of datapath is
         );
     end component;
 
-    -- ==========================================================
-    -- Registros internos principales
-    -- ==========================================================
-
-    -- Program Counter:
-    -- Guarda la dirección de la próxima posición de la ROM que se va a leer.
+    -- Program Counter: guarda la dirección de la próxima instrucción en la ROM.
     signal PC_reg : unsigned(7 downto 0) := (others => '0');
 
-    -- Instruction Register:
-    -- Guarda el opcode de la instrucción actual.
+    -- Instruction Register: guarda el opcode que se está ejecutando.
     signal IR_reg : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
 
-    -- Registro de operando:
-    -- Guarda el segundo byte de la instrucción puede ser una dirección o un dato inmediato.
+    -- Registro de operando: guarda el segundo byte de la instrucción.
+    -- Este valor puede ser una dirección de memoria o un dato inmediato.
     signal Operand_reg : STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
 
-    -- ==========================================================
-    -- Señales internas de conexión
-    -- ==========================================================
-
-    -- Resultado entregado por la ALU.
+    -- Señal interna con el resultado que entrega la ALU.
     signal alu_result_sig : STD_LOGIC_VECTOR(7 downto 0);
 
-    -- Datos leídos desde el banco de registros.
+    -- Datos que salen del banco de registros.
     signal reg_read1_sig : STD_LOGIC_VECTOR(7 downto 0);
     signal reg_read2_sig : STD_LOGIC_VECTOR(7 downto 0);
 
-    -- Dato que finalmente se escribirá en el banco de registros.
+    -- Dato que finalmente se escribe en el banco de registros.
     signal reg_write_data : STD_LOGIC_VECTOR(7 downto 0);
 
 begin
 
-    -- ==========================================================
-    -- Proceso del PC, IR y registro de operando
-    -- ==========================================================
-    -- Este proceso es síncrono con el reloj y responde al reset.
-    --
-    -- PC:
-    --   - Se reinicia en cero con reset.
-    --   - Se incrementa con PC_Inc.
-    --   - Se carga con Operand_reg cuando PC_Load = 1.
-    --
-    -- IR:
-    --   - Guarda el opcode leído desde la ROM.
-    --
-    -- Operand_reg:
-    --   - Guarda el operando leído desde la ROM.
-    -- ==========================================================
-
+    -- Proceso principal del PC, IR y registro de operando.
+    -- Se actualiza con el reloj y también responde al reset.
     process(clk, reset)
     begin
         if reset = '1' then
 
-            -- Reset general del datapath.
+            -- Cuando hay reset, se limpian los registros principales del datapath.
             PC_reg      <= (others => '0');
             IR_reg      <= (others => '0');
             Operand_reg <= (others => '0');
@@ -179,23 +121,22 @@ begin
             -- Control del Program Counter.
             if PC_Load = '1' then
 
-                -- Carga el PC con el operando.
-                -- Esto se usa en instrucciones de salto.
+                -- En los saltos, el PC toma el valor guardado en el operando.
                 PC_reg <= unsigned(Operand_reg);
 
             elsif PC_Inc = '1' then
 
-                -- Incrementa el PC para avanzar a la siguiente posición de la ROM.
+                -- Si no hay salto, el PC avanza a la siguiente posición de la ROM.
                 PC_reg <= PC_reg + 1;
 
             end if;
 
-            -- Carga del opcode actual.
+            -- Carga el opcode actual desde la ROM.
             if IR_Load = '1' then
                 IR_reg <= ROM_Data;
             end if;
 
-            -- Carga del operando de la instrucción.
+            -- Carga el operando de la instrucción desde la ROM.
             if Op_Load = '1' then
                 Operand_reg <= ROM_Data;
             end if;
@@ -203,47 +144,32 @@ begin
         end if;
     end process;
 
-    -- ==========================================================
-    -- Multiplexor de escritura al banco de registros
-    -- ==========================================================
-    -- Decide qué dato se va a escribir en el registro destino.
-    --
-    -- "00" -> Resultado de la ALU.
-    -- "01" -> Dato leído desde RAM/IO.
-    -- "10" -> Operando inmediato.
-    -- ==========================================================
-
+    -- Multiplexor para elegir qué dato se va a guardar en el banco de registros.
     process(Mux_RegWrite_Sel, alu_result_sig, RAM_Data_In, Operand_reg)
     begin
         case Mux_RegWrite_Sel is
 
             when "00" =>
-                -- Se guarda el resultado generado por la ALU.
+                -- Guarda el resultado que viene de la ALU.
                 reg_write_data <= alu_result_sig;
 
             when "01" =>
-                -- Se guarda el dato leído desde RAM/IO.
-                -- Por ejemplo, cuando se lee el puerto 0xFE.
+                -- Guarda el dato leído desde RAM/IO, por ejemplo desde el puerto 0xFE.
                 reg_write_data <= RAM_Data_In;
 
             when "10" =>
-                -- Se guarda directamente el operando de la instrucción.
-                -- Se usa en instrucciones inmediatas como MOVI_R0 o MOVI_R1.
+                -- Guarda directamente el operando inmediato de la instrucción.
                 reg_write_data <= Operand_reg;
 
             when others =>
-                -- Caso de seguridad.
+                -- Caso de seguridad por si llega un valor no esperado.
                 reg_write_data <= (others => '0');
 
         end case;
     end process;
 
-    -- ==========================================================
-    -- Instancia de la ALU
-    -- ==========================================================
-    -- La ALU recibe dos datos del banco de registros y realiza la operación indicada por ALU_Sel.
-    -- ==========================================================
-
+    -- Instancia de la ALU.
+    -- Recibe dos datos del banco de registros y realiza la operación indicada.
     Inst_ALU: alu port map(
         A       => reg_read1_sig,
         B       => reg_read2_sig,
@@ -252,12 +178,8 @@ begin
         Zero    => Zero_Flag
     );
 
-    -- ==========================================================
-    -- Instancia del banco de registros
-    -- ==========================================================
-    -- Permite leer dos registros al mismo tiempo y escribir uno.
-    -- ==========================================================
-
+    -- Instancia del banco de registros.
+    -- Permite leer dos registros al mismo tiempo y escribir en uno.
     Inst_RegBank: register_bank port map(
         clk         => clk,
         reset       => reset,
@@ -270,23 +192,17 @@ begin
         read_data2  => reg_read2_sig
     );
 
-    -- ==========================================================
-    -- Asignaciones hacia el exterior del datapath
-    -- ==========================================================
-
-    -- La dirección de ROM viene del Program Counter.
+    -- La dirección de la ROM sale del Program Counter.
     ROM_Addr <= std_logic_vector(PC_reg);
 
-    -- El opcode actual se entrega a la unidad de control.
+    -- El opcode actual se manda hacia la unidad de control.
     Opcode <= IR_reg;
 
-    -- La dirección para RAM/IO corresponde al operando.
-    -- Ejemplo:
-    --   0xFE para leer switches.
-    --   0xFF para escribir salidas.
+    -- La dirección de RAM/IO viene del operando.
+    -- Por ejemplo, 0xFE para leer switches y 0xFF para escribir salidas.
     RAM_Addr <= Operand_reg;
 
-    -- El dato que se escribe en RAM/IO sale del registro fuente A.
+    -- El dato que se escribe en RAM/IO viene del primer registro leído.
     RAM_Data_Out <= reg_read1_sig;
 
 end Behavioral;
