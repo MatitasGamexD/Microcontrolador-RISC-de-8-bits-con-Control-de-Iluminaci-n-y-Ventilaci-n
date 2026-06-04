@@ -6,7 +6,7 @@ vhdl
 -- Trabaja con datos de 8 bits y permite hacer suma, resta, AND y OR.
 --
 -- En el proyecto se usa principalmente la operación AND para revisar
-el bit del switch de modo y saber si está en manual o automático.
+-- el bit del switch de modo y saber si está en manual o automático.
 -- ==========================================================
 
 library IEEE;
