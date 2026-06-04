@@ -137,8 +137,7 @@ architecture Behavioral of rom is
 begin
 
     -- Lectura de ROM.
-    -- El Program Counter entrega la dirección y la ROM devuelve
-    -- el opcode o el operando correspondiente.
+    -- El Program Counter entrega la dirección y la ROM devuelve el opcode o el operando correspondiente.
     instruction <= rom_memory(to_integer(unsigned(address)));
 
 end Behavioral;
