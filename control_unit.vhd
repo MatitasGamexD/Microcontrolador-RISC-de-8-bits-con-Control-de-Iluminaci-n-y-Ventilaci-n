@@ -67,9 +67,8 @@ end control_unit;
 
 architecture Behavioral of control_unit is
 
-    -- ==========================================================
+    
     -- Definición de estados de la FSM
-    -- ==========================================================
 
     type fsm_state is (
         S_FETCH_OPCODE,   -- Buscar opcode
@@ -137,12 +136,9 @@ begin
 
         next_state <= state;
 
-        -- ======================================================
+        
         -- Máquina de estados
-        -- ======================================================
-
         case state is
-
             -- --------------------------------------------------
             -- Estado 1: FETCH_OPCODE
             -- --------------------------------------------------
