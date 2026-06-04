@@ -55,9 +55,7 @@ begin
     -- ==========================================================
     -- Proceso síncrono de escritura y reset
     -- ==========================================================
-    -- El reset limpia todos los registros.
-    -- La escritura se hace solo en flanco de subida del reloj
-    -- y únicamente si we = '1'.
+    -- El reset limpia todos los registros la escritura se hace solo en flanco de subida del reloj y únicamente si we = '1'.
     -- ==========================================================
 
     process(clk, reset)
@@ -71,8 +69,7 @@ begin
         elsif rising_edge(clk) then
 
             -- Escritura síncrona.
-            -- Si we está activo, se escribe write_data en el registro
-            -- indicado por write_addr.
+            -- Si we está activo, se escribe write_data en el registro indicado por write_addr.
             if we = '1' then
                 registers(to_integer(unsigned(write_addr))) <= write_data;
             end if;
@@ -83,8 +80,7 @@ begin
     -- ==========================================================
     -- Lectura asíncrona
     -- ==========================================================
-    -- Las salidas read_data1 y read_data2 cambian automáticamente
-    -- cuando cambian read_addr1 o read_addr2.
+    -- Las salidas read_data1 y read_data2 cambian automáticamente cuando cambian read_addr1 o read_addr2.
     -- ==========================================================
 
     read_data1 <= registers(to_integer(unsigned(read_addr1)));
