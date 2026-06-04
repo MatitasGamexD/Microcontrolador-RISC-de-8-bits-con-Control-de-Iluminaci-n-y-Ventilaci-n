@@ -160,9 +160,7 @@ begin
             -- ==================================================
             -- Temporizadores del modo automático
             -- ==================================================
-            -- Los contadores solo avanzan si sw_modo = '1'.
-            -- Si el sistema vuelve a modo manual, los contadores
-            -- se reinician desde cero.
+            -- Los contadores solo avanzan si sw_modo = '1' Si el sistema vuelve a modo manual, los contadores se reinician desde cero.
             -- ==================================================
 
             if sw_modo = '1' then
@@ -241,8 +239,7 @@ begin
     auto_ilum <= '1' when contador_led_auto < CICLOS_5_SEGUNDOS else '0';
 
     -- Ventilador automático:
-    -- Durante los primeros 5 segundos del ciclo de 15 segundos
-    -- el ventilador está encendido.
+    -- Durante los primeros 5 segundos del ciclo de 15 segundos el ventilador está encendido.
     -- Luego permanece apagado 10 segundos.
     auto_vent <= '1' when contador_vent_auto < CICLOS_5_SEGUNDOS else '0';
 
@@ -253,8 +250,7 @@ begin
     --
     -- Si sw_modo = 1, se usan las señales automáticas.
     --
-    -- Si sw_modo = 0, se usan las salidas escritas por
-    -- el microcontrolador en reg_salidas.
+    -- Si sw_modo = 0, se usan las salidas escritas por el microcontrolador en reg_salidas.
     -- ==========================================================
 
     out_ilum <= '0' when reset = '1' else
